@@ -110,7 +110,7 @@ public class spantree_for_test {
     public void run() {
         try {
             in = new FastScanner(new File("spantree.in"));
-            out = new PrintWriter("test.out");
+            out = new PrintWriter("spantree.out");
             solve();
 
             out.flush();
