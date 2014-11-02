@@ -1,10 +1,11 @@
+
 import java.io.*;
 import java.util.*;
 
 /**
  * Created by daria on 01.11.14.
  */
-public class spantree {
+public class spantree_for_test {
     class FastScanner {
         StreamTokenizer st;
 
@@ -63,58 +64,53 @@ public class spantree {
 
     public void solve() throws IOException {
         Pair[] vertices;
-        final double INF = 40000;
-
+        ArrayList<Edge> edges;
         int n = in.nextInt();
         vertices = new Pair[n];
         for (int i = 0; i < n; i++) {
             vertices[i] = new Pair(in.nextInt(), in.nextInt());
         }
 
-        double[][] graph = new double[n][n];
-
+        edges = new ArrayList<Edge>();
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
-               graph[i][j] = graph[j][i] = Math.sqrt((vertices[i].x - vertices[j].x)*(vertices[i].x - vertices[j].x)  + (vertices[i].y - vertices[j].y)*(vertices[i].y - vertices[j].y));
+                edges.add(new Edge(i, j,  Math.sqrt((vertices[i].x - vertices[j].x)*(vertices[i].x - vertices[j].x)  + (vertices[i].y - vertices[j].y)*(vertices[i].y - vertices[j].y))));
             }
         }
+        Collections.sort(edges);
+        p = new int[n];
 
-        boolean[] used = new boolean[n];
-        double[] minEdge = new double[n];
-        int[] selEdge = new int[n];
-        Arrays.fill(minEdge, INF);
-        Arrays.fill(selEdge, -1);
-        minEdge[0] = 0;
-        double weight = 0;
-
+        Double weight = new Double(0);
         for (int i = 0; i < n; i++) {
-            int v = -1;
-            for (int j = 0; j < n; j++) {
-                if (!used[j] && (v == -1 || minEdge[v] > minEdge[j])) {
-                    v = j;
-                }
-            }
-            used[v] = true;
-            for (int j = 0; j < n; j++) {
-                if (minEdge[j] > graph[v][j] && v != j && !used[j]) {
-                    minEdge[j] = graph[v][j];
-                    selEdge[j] = v;
-                }
-            }
+            p[i] = i;
         }
 
-        for (int i = 0; i < n; i++) {
-            weight += minEdge[i];
+        for (Edge e : edges) {
+            if (dsuGet(e.u) != dsuGet(e.v)) {
+                weight += e.weight;
+                dsuUnite(e.u, e.v);
+            }
         }
+        String s = Double.toString(weight);
+        out.println(s);
+    }
 
-        out.println(Double.toString(weight));
+    int dsuGet(int v) {
+        return (v == p[v]) ? v : (p[v] = dsuGet(p[v]));
+    }
+
+    void dsuUnite (int a, int b) {
+        a = dsuGet(a);
+        b = dsuGet(b);
+        if (a != b) {
+            p[a] = b;
+        }
     }
 
     public void run() {
         try {
             in = new FastScanner(new File("spantree.in"));
-            out = new PrintWriter("spantree.out");
-
+            out = new PrintWriter("test.out");
             solve();
 
             out.flush();
@@ -124,6 +120,6 @@ public class spantree {
     }
 
     public static void main(String[] arg) {
-        new spantree().run();
+        new spantree_for_test().run();
     }
 }
