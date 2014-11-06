@@ -52,58 +52,150 @@ public class chinese {
             this.weight = weight;
         }
 
-        public int compareTo(Edge a) {
-            return Integer.compare(weight, a.weight);
+        @Override
+        public int compareTo(Edge edge) {
+            return Integer.compare(weight, edge.weight);
         }
     }
 
     FastScanner in;
     PrintWriter out;
-    ArrayList<Pair>[] graph;
-    Edge[] edges;
-    Edge[] edgesCopy;
-    ArrayList<Edge> zeroEdges;
+    int k = 0;
     final int INF = 1000000000;
-    final long INF2 = 10000000000000L;
 
     public void solve() throws IOException {
-        int n = in.nextInt();
-        int m = in.nextInt();
 
-        graph = new ArrayList[n];
+        int n = in.nextInt(), m = in.nextInt();
+
+        ArrayList<Edge> edges = new ArrayList<Edge>();
+        ArrayList<Pair>[] graph = new ArrayList[n];
+
+        boolean[] used = new boolean[n];
+
+
+
         for (int i = 0; i < n; i++) {
             graph[i] = new ArrayList<Pair>();
         }
-        edges = new Edge[m];
-        edgesCopy = edges;
-        zeroEdges = new ArrayList<Edge>();
-
-
         for (int i = 0; i < m; i++) {
-            int v = in.nextInt() - 1;
-            int u = in.nextInt() - 1;
-            int weight = in.nextInt();
-            graph[v].add(new Pair(u, weight));
-            edges[i] = new Edge(v, u, weight);
+            int a = in.nextInt() - 1, b = in.nextInt() - 1, w = in.nextInt();
+            edges.add(new Edge(a, b, w));
+            graph[a].add(new Pair(b, w));
+        }
+        int start = 0;
+        k = n;
+        dfs(start, used, graph);
+        if (k != 0) {
+            out.print("NO");
+            return;
+        }
+        out.print("YES\n" + findMST(edges, n, start));
+
+
+    }
+
+    void dfs(int v, boolean[] used, ArrayList<Pair>[] graph) {
+        k--;
+        used[v] = true;
+        for (Pair p : graph[v]) {
+            if (!used[p.v]) {
+                dfs(p.v, used, graph);
+            }
         }
 
-        for (int v = 0; v < n; v++) {
-            int min = INF;
-            for (int i = 0; i < m; i++) {
-                if (edges[i].v == v && edges[i].weight < min) {
-                    min = edges[i].weight;
-                }
-            }
+    }
 
-            for (int i = 0; i < m; i++) {
-                if (edges[i].v == v) {
-                    edgesCopy[i].weight -= min;
-                }
-                if (edgesCopy[i].weight == 0) {
-                    zeroEdges.add(edges[i]);
-                }
+    void dfs1(int v, boolean[] used, ArrayList<Pair>[] graph, ArrayList<Integer> order) {
+        used[v] = true;
+        for (Pair p : graph[v]) {
+            if (!used[p.v]) {
+                dfs1(p.v, used, graph, order);
             }
         }
+        order.add(v);
+    }
+
+    void dfs2 (int v, boolean[] used, ArrayList<Pair>[] graph, ArrayList<Integer> component) {
+        used[v] = true;
+        component.add(v);
+        for(Pair p : graph[v]) {
+            if (!used[p.v]) {
+                dfs2(p.v, used, graph, component);
+            }
+        }
+    }
+
+    int findMST(ArrayList<Edge> edges, int n, int root) {
+        int res = 0;
+        int[] minEdge = new int[n];
+        Arrays.fill(minEdge, INF);
+        ArrayList<Pair>[] graphOfZero = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            graphOfZero[i] = new ArrayList<Pair>();
+        }
+        ArrayList<Edge> zeroEdges = new ArrayList<Edge>();
+
+        for (Edge e : edges) {
+            minEdge[e.v] = Math.min(e.weight, minEdge[e.v]);
+        }
+        for (int i = 0; i < n; i++) {
+            if (i == root)
+                continue;
+            res+= minEdge[i];
+        }
+        for (Edge e : edges) {
+            if (e.weight == minEdge[e.v]) {
+                zeroEdges.add(new Edge(e.u, e.v, 0));
+                graphOfZero[e.u].add(new Pair(e.v, 0));
+            }
+        }
+        boolean[] used = new boolean[n];
+        k = n;
+        dfs(root, used, graphOfZero);
+        if (k == 0)
+            return res;
+
+        int[] newComponents = new int[n];
+        newComponents = condensation(graphOfZero);
+        ArrayList<Edge> newEdges = new ArrayList<Edge>();
+        for (Edge e : edges) {
+            if (newComponents[e.u] != newComponents[e.v] && !newEdges.contains(new Edge(newComponents[e.u], newComponents[e.v], e.weight - minEdge[e.v]))) {
+                newEdges.add(new Edge(newComponents[e.u], newComponents[e.v], e.weight - minEdge[e.v]));
+            }
+        }
+        int compCount = 0;
+        for (int i = 0; i < n; i++) {
+            compCount = Math.max(compCount, newComponents[i]);
+        }
+        res += findMST(newEdges, compCount + 1, newComponents[root]);
+        return res;
+    }
+
+    int[] condensation(ArrayList<Pair>[] graph) {
+        int n = graph.length;
+        int[] components = new int[n];
+        int compCount = 0;
+        boolean[] used = new boolean[n];
+        ArrayList<Integer> order = new ArrayList<Integer>();
+        ArrayList<Integer> component = new ArrayList<Integer>();
+        for (int i = 0; i < n; i++) {
+            if (!used[i])
+                dfs1(i, used, graph, order);
+        }
+
+        Arrays.fill(used, false);
+        for (int i = 0; i < n; i++) {
+            int v = order.get(n - 1 - i);
+            if (!used[v]) {
+                dfs2(v, used, graph, component);
+                for (int c : component) {
+                    components[c] = compCount;
+                }
+                component.clear();
+                compCount++;
+            }
+        }
+        return components;
     }
 
     public void run() {
