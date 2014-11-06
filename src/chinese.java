@@ -182,6 +182,7 @@ public class chinese {
             if (!used[i])
                 dfs1(i, used, graph, order);
         }
+        Collections.reverse(order);
 
         Arrays.fill(used, false);
         for (int i = 0; i < n; i++) {
