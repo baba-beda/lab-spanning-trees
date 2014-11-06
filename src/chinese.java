@@ -61,7 +61,7 @@ public class chinese {
     FastScanner in;
     PrintWriter out;
     int k = 0;
-    final int INF = 1000000000;
+    final int INF = 1000000500;
 
     public void solve() throws IOException {
 
@@ -79,8 +79,10 @@ public class chinese {
         }
         for (int i = 0; i < m; i++) {
             int a = in.nextInt() - 1, b = in.nextInt() - 1, w = in.nextInt();
-            edges.add(new Edge(a, b, w));
-            graph[a].add(new Pair(b, w));
+            if (a != b) {
+                edges.add(new Edge(a, b, w));
+                graph[a].add(new Pair(b, w));
+            }
         }
         int start = 0;
         k = n;
@@ -125,8 +127,8 @@ public class chinese {
         }
     }
 
-    int findMST(ArrayList<Edge> edges, int n, int root) {
-        int res = 0;
+    long findMST(ArrayList<Edge> edges, int n, int root) {
+        long res = 0;
         int[] minEdge = new int[n];
         Arrays.fill(minEdge, INF);
         ArrayList<Pair>[] graphOfZero = new ArrayList[n];
@@ -182,11 +184,11 @@ public class chinese {
             if (!used[i])
                 dfs1(i, used, graph, order);
         }
-        Collections.reverse(order);
+
 
         Arrays.fill(used, false);
         for (int i = 0; i < n; i++) {
-            int v = order.get(n - 1 - i);
+            int v = order.get(i);
             if (!used[v]) {
                 dfs2(v, used, graph, component);
                 for (int c : component) {
