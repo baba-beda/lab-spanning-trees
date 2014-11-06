@@ -64,7 +64,6 @@ public class chinese {
     final int INF = 1000000500;
 
     public void solve() throws IOException {
-
         int n = in.nextInt(), m = in.nextInt();
 
         ArrayList<Edge> edges = new ArrayList<Edge>();
@@ -73,10 +72,10 @@ public class chinese {
         boolean[] used = new boolean[n];
 
 
-
         for (int i = 0; i < n; i++) {
             graph[i] = new ArrayList<Pair>();
         }
+
         for (int i = 0; i < m; i++) {
             int a = in.nextInt() - 1, b = in.nextInt() - 1, w = in.nextInt();
             if (a != b) {
@@ -87,13 +86,12 @@ public class chinese {
         int start = 0;
         k = n;
         dfs(start, used, graph);
+
         if (k != 0) {
             out.print("NO");
             return;
         }
         out.print("YES\n" + findMST(edges, n, start));
-
-
     }
 
     void dfs(int v, boolean[] used, ArrayList<Pair>[] graph) {
@@ -157,8 +155,7 @@ public class chinese {
         if (k == 0)
             return res;
 
-        int[] newComponents = new int[n];
-        newComponents = condensation(graphOfZero);
+        int[] newComponents = condensation(graphOfZero);
         ArrayList<Edge> newEdges = new ArrayList<Edge>();
         for (Edge e : edges) {
             if (newComponents[e.u] != newComponents[e.v] && !newEdges.contains(new Edge(newComponents[e.u], newComponents[e.v], e.weight - minEdge[e.v]))) {
@@ -185,12 +182,23 @@ public class chinese {
                 dfs1(i, used, graph, order);
         }
 
+        ArrayList<Pair>[] graph_t = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            graph_t[i] = new ArrayList<Pair>();
+        }
+
+        for (int i = 0; i < n; i++) {
+            for (Pair p : graph[i]) {
+                graph_t[p.v].add(new Pair(i, p.weight));
+            }
+        }
+
 
         Arrays.fill(used, false);
         for (int i = 0; i < n; i++) {
-            int v = order.get(i);
+            int v = order.get(n - 1 - i);
             if (!used[v]) {
-                dfs2(v, used, graph, component);
+                dfs2(v, used, graph_t, component);
                 for (int c : component) {
                     components[c] = compCount;
                 }
